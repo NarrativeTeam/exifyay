@@ -43,8 +43,9 @@ def data(buf):
         exif_entry_unset(ed, EXIF_IFD_0, EXIF_TAG_MAKE)
         exif_entry_set_string(ed, EXIF_IFD_0, EXIF_TAG_MAKE, "Narrative")
         exif_entry_unset(ed, EXIF_IFD_0, EXIF_TAG_MODEL)
-        exif_entry_set_string(ed, EXIF_IFD_0, EXIF_TAG_MODEL,
-                              "Narrative Clip")
+        exif_entry_set_string(ed, EXIF_IFD_0, EXIF_TAG_MODEL, "Narrative Clip")
+        exif_entry_unset(ed, EXIF_IFD_0, EXIF_TAG_SOFTWARE)
+        exif_entry_set_string(ed, EXIF_IFD_0, EXIF_TAG_SOFTWARE, "Narrative")
 
         if not exif_size_ok(ed):
             raise ValueError("EXIF data size too large")
