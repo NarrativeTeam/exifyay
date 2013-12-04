@@ -58,16 +58,37 @@ void exif_entry_set_slong (ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag,
 void exif_entry_set_srational (ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag,
     ExifSRational r);
 
-/* SP: Expose GPS setters.  */
-void exif_entry_set_gps_coord(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag,
-    ExifRational r1, ExifRational r2, ExifRational r3);
-void exif_entry_set_gps_altitude(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifRational r1);
-void exif_entry_set_gps_version(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifByte r1, ExifByte r2, ExifByte r3, ExifByte r4);
-
 /* SP: Function to remove tags with the same interface as the other
  * functions from here.
  */
 void exif_entry_unset(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag);
+
+/* SP: GPS setters.  */
+void exif_entry_set_gps_longitude(ExifData * pEdata, ExifRational r1, ExifRational r2, ExifRational r3);
+void exif_entry_set_gps_longitude_ref_east(ExifData * pEdata);
+void exif_entry_set_gps_longitude_ref_west(ExifData * pEdata);
+
+void exif_entry_set_gps_latitude(ExifData * pEdata, ExifRational r1, ExifRational r2, ExifRational r3);
+void exif_entry_set_gps_latitude_ref_north(ExifData * pEdata);
+void exif_entry_set_gps_latitude_ref_south(ExifData * pEdata);
+
+void exif_entry_set_gps_altitude(ExifData * pEdata, ExifRational r1);
+void exif_entry_set_gps_altitude_ref_above_sea_level(ExifData * pEdata);
+void exif_entry_set_gps_altitude_ref_below_sea_level(ExifData * pEdata);
+
+void exif_entry_set_gps_version(ExifData * pEdata, ExifByte r1, ExifByte r2, ExifByte r3, ExifByte r4);
+void exif_entry_set_gps_dop(ExifData * pEdata, ExifRational r1);
+
+void exif_entry_set_gps_img_direction(ExifData * pEdata, ExifRational r1);
+void exif_entry_set_gps_img_direction_ref_true(ExifData * pEdata);
+void exif_entry_set_gps_img_direction_ref_magnetic(ExifData * pEdata);
+
+
+/* SP: Generic GPS setters. */
+void exif_entry_set_gps_byte1(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifByte r1);
+void exif_entry_set_gps_rational1(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifRational r1);
+void exif_entry_set_gps_rational3(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifRational r1, ExifRational r2, ExifRational r3);
+void exif_entry_set_gps_string (ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, const char *s);
 
 
 #endif
