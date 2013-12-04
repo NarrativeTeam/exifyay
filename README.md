@@ -23,6 +23,13 @@ libexif and libjpeg use autotools, we use CMake because Simon could not
 figure out how to cleanly build static libraries that work both on OS X
 and Linux.
 
+## Checking for memory leaks
+We use [Valgrind][valgrind] and Python built with `--with-valgrind` on 
+test scripts and make sure that no directly nor indirectly lost memory
+is reported. Possibly lost memory is reported, however, but our sanity
+check is remove all libexif unref calls and such and verify that the
+possibly lost memory is unchanged.
+
 ## Licenses
  * exifyay (LGPL v3)
  * [libexif](http://libexif.sourceforge.net/) (LGPL v2.1)
@@ -32,3 +39,4 @@ and Linux.
 
 [exif-wp]: http://en.wikipedia.org/wiki/Exchangeable_image_file_format
 [cython]: http://cython.org/
+[valgrind]: http://valgrind.org/
