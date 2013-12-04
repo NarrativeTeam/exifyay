@@ -60,3 +60,4 @@ add_library (
     pentax/mnote-pentax-entry.c
     pentax/mnote-pentax-tag.c
     )
+SET_TARGET_PROPERTIES( exif PROPERTIES COMPILE_FLAGS "-fPIC")

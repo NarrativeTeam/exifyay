@@ -1,1 +1,2 @@
 add_library (JpegEncoderEXIF JpegEncoderEXIF.c)
+SET_TARGET_PROPERTIES( JpegEncoderEXIF PROPERTIES COMPILE_FLAGS "-fPIC")
