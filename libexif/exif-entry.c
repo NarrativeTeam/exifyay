@@ -1785,7 +1785,17 @@ exif_entry_gps_initialize (ExifEntry *e, int tag)
                 exif_set_rational (e->data, o, r);
                 break;
 
-           /* RATIONAL, 3 components, default 0/1*/
+        /* RATIONAL, 1 component, no default */
+        case EXIF_TAG_GPS_DOP:
+        case EXIF_TAG_GPS_IMG_DIRECTION:
+                e->components = 1;
+                e->format = EXIF_FORMAT_RATIONAL;
+                e->size = exif_format_get_size (e->format) * e->components;
+                e->data = exif_entry_alloc (e, e->size);
+                if (!e->data) break;
+                break;
+
+        /* RATIONAL, 3 components, default 0/1*/
         case EXIF_TAG_YCBCR_COEFFICIENTS:
         case EXIF_TAG_GPS_TIME_STAMP:
         case EXIF_TAG_GPS_LONGITUDE:
@@ -1823,6 +1833,27 @@ exif_entry_gps_initialize (ExifEntry *e, int tag)
                 memset((char *) e->data, 0, e->size);
                 break;
 
+        /* ASCII 2 components, no default */
+        case EXIF_TAG_GPS_STATUS:
+                e->components = 2;
+                e->format = EXIF_FORMAT_ASCII;
+                e->size = exif_format_get_size (e->format) * e->components;
+                e->data = exif_entry_alloc (e, e->size);
+                if (!e->data) break;
+                memset((char *) e->data, 0, e->size);
+                break;
+
+
+        /* ASCII 2 Components,  default 'T' */
+        case EXIF_TAG_GPS_IMG_DIRECTION_REF:
+                e->components = 2;
+                e->format = EXIF_FORMAT_ASCII;
+                e->size = exif_format_get_size (e->format) * e->components;
+                e->data = exif_entry_alloc (e, e->size);
+                if (!e->data) break;
+                memcpy(e->data, "T\0", 2);
+                break;
+
         /* ASCII 20 Components, no default*/
         case EXIF_TAG_GPS_MAP_DATUM:
                 e->components = 20;
@@ -1830,6 +1861,17 @@ exif_entry_gps_initialize (ExifEntry *e, int tag)
                 e->size = exif_format_get_size (e->format) * e->components;
                 e->data = exif_entry_alloc (e, e->size);
                 if (!e->data) break;
+                memset((char *) e->data, 0, e->size);
+                break;
+
+        /* ASCII 11 Components, no default*/
+        case EXIF_TAG_GPS_DATE_STAMP:
+                e->components = 11;
+                e->format = EXIF_FORMAT_ASCII;
+                e->size = exif_format_get_size (e->format) * e->components;
+                e->data = exif_entry_alloc (e, e->size);
+                if (!e->data) break;
+                memset((char *) e->data, 0, e->size);
                 break;
         }
 }
