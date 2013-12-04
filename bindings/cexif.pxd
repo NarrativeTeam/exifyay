@@ -6,8 +6,24 @@ cdef extern from "libexif/exif-content.h":
         pass
 
     ctypedef void(*ExifDataForeachContentFunc)(ExifContent*, void* user_data)
+    ctypedef void (*ExifContentForeachEntryFunc)(ExifEntry *, void *user_data)
 
-    void exif_content_dump(ExifContent* content, unsigned int indent)
+    ExifContent *exif_content_new     ()
+    ExifContent *exif_content_new_mem (ExifMem *)
+    void         exif_content_ref     (ExifContent *content)
+    void         exif_content_unref   (ExifContent *content)
+    void         exif_content_free    (ExifContent *content)
+    void         exif_content_add_entry    (ExifContent *c, ExifEntry *entry)
+    void         exif_content_remove_entry (ExifContent *c, ExifEntry *e)
+    ExifEntry   *exif_content_get_entry    (ExifContent *content, ExifTag tag)
+    void         exif_content_fix          (ExifContent *c)
+
+    void         exif_content_foreach_entry (ExifContent *content,
+                                             ExifContentForeachEntryFunc func,
+                                             void *user_data)
+    ExifIfd exif_content_get_ifd (ExifContent *c)
+    void exif_content_dump  (ExifContent *content, unsigned int indent)
+    void exif_content_log   (ExifContent *content, ExifLog *log)
 
 
 cdef extern from "libexif/exif-tag.h":
@@ -191,10 +207,32 @@ cdef extern from "JpegEncoderEXIF/JpegEncoderEXIF.h":
         ExifSLong n)
     void exif_entry_set_srational (ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag,
         ExifSRational r)
-    void exif_entry_set_gps_coord(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag,
-                                  ExifRational r1, ExifRational r2, ExifRational r3)
-    void exif_entry_set_gps_altitude(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifRational r1)
-    void exif_entry_set_gps_version(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifByte r1, ExifByte r2, ExifByte r3, ExifByte r4)
+
+    void exif_entry_unset(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag)
+
+    void exif_entry_set_gps_longitude(ExifData * pEdata, ExifRational r1, ExifRational r2, ExifRational r3)
+    void exif_entry_set_gps_longitude_ref_east(ExifData * pEdata)
+    void exif_entry_set_gps_longitude_ref_west(ExifData * pEdata)
+
+    void exif_entry_set_gps_latitude(ExifData * pEdata, ExifRational r1, ExifRational r2, ExifRational r3)
+    void exif_entry_set_gps_latitude_ref_north(ExifData * pEdata)
+    void exif_entry_set_gps_latitude_ref_south(ExifData * pEdata)
+
+    void exif_entry_set_gps_altitude(ExifData * pEdata, ExifRational r1)
+    void exif_entry_set_gps_altitude_ref_above_sea_level(ExifData * pEdata)
+    void exif_entry_set_gps_altitude_ref_below_sea_level(ExifData * pEdata)
+
+    void exif_entry_set_gps_version(ExifData * pEdata, ExifByte r1, ExifByte r2, ExifByte r3, ExifByte r4)
+    void exif_entry_set_gps_dop(ExifData * pEdata, ExifRational r1)
+
+    void exif_entry_set_gps_img_direction(ExifData * pEdata, ExifRational r1)
+    void exif_entry_set_gps_img_direction_ref_true(ExifData * pEdata)
+    void exif_entry_set_gps_img_direction_ref_magnetic(ExifData * pEdata)
+
+    void exif_entry_set_gps_byte1(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifByte r1)
+    void exif_entry_set_gps_rational1(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifRational r1)
+    void exif_entry_set_gps_rational3(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifRational r1, ExifRational r2, ExifRational r3)
+    void exif_entry_set_gps_string (ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, const char *s)
 
 
 cdef extern from "stdarg.h":

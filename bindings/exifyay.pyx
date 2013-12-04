@@ -1,54 +1,89 @@
 from cexif cimport *
+from libc.stdlib cimport free
+from cpython cimport bool
 
 
 def data(buf):
     cdef ExifLoader* loader
     cdef ExifData* ed
-    cdef ExifLog* log = NULL
-
-    log = exif_log_new()
+    cdef JPEGData* jdata
 
     loader = exif_loader_new()
     exif_loader_write(loader, buf, len(buf))
     ed = exif_loader_get_data(loader)
     exif_loader_unref(loader)
 
-    #cdef ExifRational rat
-    #rat.numerator = 1
-    #rat.denominator = 1
-    #exif_entry_set_gps_coord(ed, EXIF_IFD_GPS, EXIF_TAG_GPS_LONGITUDE,
-    #                         rat, rat, rat)
-    #rat.numerator = 10
-    #rat.denominator = 2
-    #exif_entry_set_gps_altitude(ed, EXIF_IFD_GPS, EXIF_TAG_GPS_ALTITUDE,
-    #                            rat)
-
-    cdef JPEGData* jdata
-    cdef unsigned char *d
-    cdef unsigned int ds
-
-    d = NULL
-
     # Parse the JPEG file.
-    jdata = jpeg_data_new ()
-    jpeg_data_load_data (jdata, buf, len(buf))
+    jdata = jpeg_data_new()
+    jpeg_data_load_data(jdata, buf, len(buf))
 
-    # Make sure the EXIF data is not too big.
-    exif_data_save_data (ed, &d, &ds)
+    try:
+
+        # Set GPS longitude and latitude to dummy values.
+        exif_entry_set_gps_longitude(ed,
+                                     rational(50, 1),
+                                     rational(20, 1),
+                                     rational(20, 1))
+        exif_entry_set_gps_longitude_ref_west(ed)
+
+        exif_entry_set_gps_latitude(ed,
+                                    rational(45, 1),
+                                    rational(20, 1),
+                                    rational(10, 1))
+        exif_entry_set_gps_latitude_ref_north(ed)
+
+        exif_entry_set_gps_altitude(ed, rational(7, 3))
+        exif_entry_set_gps_altitude_ref_below_sea_level(ed)
+
+        exif_entry_set_gps_img_direction(ed, rational(700, 36))
+        exif_entry_set_gps_img_direction_ref_true(ed)
+
+        exif_entry_set_gps_dop(ed, rational(123, 23))
+
+        exif_entry_unset(ed, EXIF_IFD_0, EXIF_TAG_MAKE)
+        exif_entry_set_string(ed, EXIF_IFD_0, EXIF_TAG_MAKE, "Narrative")
+        exif_entry_unset(ed, EXIF_IFD_0, EXIF_TAG_MODEL)
+        exif_entry_set_string(ed, EXIF_IFD_0, EXIF_TAG_MODEL,
+                              "Narrative Clip")
+
+        if not exif_size_ok(ed):
+            raise ValueError("EXIF data size too large")
+
+        jpeg_data_set_exif_data(jdata, ed)
+
+        # Save the modified image.
+        jpeg_data_save_file(jdata, "out.jpg")
+    except:
+        raise
+    finally:
+        jpeg_data_unref(jdata)
+        exif_data_unref(ed)
+
+
+cdef bool exif_size_ok(ExifData* ed):
+    cdef unsigned char* d = NULL
+    cdef unsigned int ds = 0
+
+    exif_data_save_data(ed, &d, &ds)
     if ds:
-        #free (d)
+        free(d)
         if ds > 0xffff:
-            raise ValueError("too much EXIF data")
+            return False
+    return True
 
-    jpeg_data_set_exif_data (jdata, ed)
 
-    # Save the modified image.
-    #with open("out.jpg", "wb") as f:
-    jpeg_data_save_file (jdata, "out2.jpg")
+cdef ExifRational rational(uint32_t num, uint32_t denom):
+    cdef ExifRational rat
+    rat.numerator = num
+    rat.denominator = denom
+    return rat
 
-    jpeg_data_unref (jdata)
-    exif_data_unref(ed)
-    exif_log_free(log)
+
+cdef ExifSRational signed_rational(int32_t num, int32_t denom):
+    cdef ExifSRational rat
+    rat.numerator = num
+    rat.denominator = denom
+    return rat
 
 
 ctypedef enum ExifIfd:
