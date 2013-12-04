@@ -301,3 +301,14 @@ void exif_entry_set_gps_version(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag,
     exif_entry_fix (pE);
     exif_entry_unref (pE);
 }
+
+
+void exif_entry_unset(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag)
+{
+    ExifEntry *pE;
+
+    pE = exif_content_get_entry (pEdata->ifd[eEifd], eEtag);
+    if (pE) {
+        exif_content_remove_entry (pEdata->ifd[eEifd], pE);
+    }
+}

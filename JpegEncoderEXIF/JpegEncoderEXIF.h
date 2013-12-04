@@ -64,5 +64,10 @@ void exif_entry_set_gps_coord(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag,
 void exif_entry_set_gps_altitude(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifRational r1);
 void exif_entry_set_gps_version(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifByte r1, ExifByte r2, ExifByte r3, ExifByte r4);
 
+/* SP: Function to remove tags with the same interface as the other
+ * functions from here.
+ */
+void exif_entry_unset(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag);
+
 
 #endif

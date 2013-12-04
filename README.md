@@ -13,7 +13,8 @@ i18n related stuff and added a GPS routine from the same source where
 JpegEncoderEXIF comes from.
 
 JpegEncoderEXIF uses libexif and provides a higher-level interface to
-set Exif data.
+set Exif data. We made GPS functions public and added a function to
+unset tags.
 
 libexif performs the heavy lifting that lets us read and write Exif
 data. libjpeg is part of the exif tool closely related to libexif.
