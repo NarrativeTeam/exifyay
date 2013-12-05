@@ -24,11 +24,17 @@ figure out how to cleanly build static libraries that work both on OS X
 and Linux.
 
 ## Checking for memory leaks
-We use [Valgrind][valgrind] and Python built with `--with-valgrind` on 
+We use [Valgrind][valgrind] and Python built with `--with-valgrind` on
 test scripts and make sure that no directly nor indirectly lost memory
 is reported. Possibly lost memory is reported, however, but our sanity
-check is remove all libexif unref calls and such and verify that the
-possibly lost memory is unchanged.
+check is to remove all libexif unref calls and such and verify that the
+possibly lost memory value is unchanged.
+
+# Correctness
+We verify that running the same operations on the same data more than
+once do not change it. We also verify that outputs can be parsed with
+tools like [ExifTool][exiftool]
+
 
 ## Licenses
  * exifyay (LGPL v3)
@@ -40,3 +46,4 @@ possibly lost memory is unchanged.
 [exif-wp]: http://en.wikipedia.org/wiki/Exchangeable_image_file_format
 [cython]: http://cython.org/
 [valgrind]: http://valgrind.org/
+[exiftool]: http://www.sno.phy.queensu.ca/~phil/exiftool/
