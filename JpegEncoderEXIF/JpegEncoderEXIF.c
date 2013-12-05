@@ -341,6 +341,41 @@ void exif_entry_set_gps_img_direction_ref_magnetic(ExifData * pEdata)
     exif_entry_set_gps_string(pEdata, EXIF_IFD_GPS, EXIF_TAG_GPS_IMG_DIRECTION_REF, "M");
 }
 
+void exif_entry_set_gps_track(ExifData * pEdata, ExifRational r1)
+{
+    exif_entry_set_gps_rational1(pEdata, EXIF_IFD_GPS, EXIF_TAG_GPS_TRACK, r1);
+}
+
+void exif_entry_set_gps_track_ref_true(ExifData * pEdata)
+{
+    exif_entry_set_gps_string(pEdata, EXIF_IFD_GPS, EXIF_TAG_GPS_TRACK_REF, "T");
+}
+
+void exif_entry_set_gps_track_ref_magnetic(ExifData * pEdata)
+{
+    exif_entry_set_gps_string(pEdata, EXIF_IFD_GPS, EXIF_TAG_GPS_TRACK_REF, "M");
+}
+
+void exif_entry_set_gps_speed(ExifData * pEdata, ExifRational r1)
+{
+    exif_entry_set_gps_rational1(pEdata, EXIF_IFD_GPS, EXIF_TAG_GPS_SPEED, r1);
+}
+
+void exif_entry_set_gps_speed_ref_kilometers(ExifData * pEdata)
+{
+    exif_entry_set_gps_string(pEdata, EXIF_IFD_GPS, EXIF_TAG_GPS_SPEED_REF, "K");
+}
+
+void exif_entry_set_gps_speed_ref_miles(ExifData * pEdata)
+{
+    exif_entry_set_gps_string(pEdata, EXIF_IFD_GPS, EXIF_TAG_GPS_SPEED_REF, "M");
+}
+
+void exif_entry_set_gps_speed_ref_knots(ExifData * pEdata)
+{
+    exif_entry_set_gps_string(pEdata, EXIF_IFD_GPS, EXIF_TAG_GPS_SPEED_REF, "N");
+}
+
 /* Generic GPS functions. */
 void exif_entry_set_gps_byte1(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifByte r1)
 {

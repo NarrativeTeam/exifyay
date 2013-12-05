@@ -83,6 +83,15 @@ void exif_entry_set_gps_img_direction(ExifData * pEdata, ExifRational r1);
 void exif_entry_set_gps_img_direction_ref_true(ExifData * pEdata);
 void exif_entry_set_gps_img_direction_ref_magnetic(ExifData * pEdata);
 
+void exif_entry_set_gps_track(ExifData * pEdata, ExifRational r1);
+void exif_entry_set_gps_track_ref_true(ExifData * pEdata);
+void exif_entry_set_gps_track_ref_magnetic(ExifData * pEdata);
+
+void exif_entry_set_gps_speed(ExifData * pEdata, ExifRational r1);
+void exif_entry_set_gps_speed_ref_kilometers(ExifData * pEdata);
+void exif_entry_set_gps_speed_ref_miles(ExifData * pEdata);
+void exif_entry_set_gps_speed_ref_knots(ExifData * pEdata);
+
 
 /* SP: Generic GPS setters. */
 void exif_entry_set_gps_byte1(ExifData * pEdata, ExifIfd eEifd, ExifTag eEtag, ExifByte r1);

@@ -1787,6 +1787,8 @@ exif_entry_gps_initialize (ExifEntry *e, int tag)
 
         /* RATIONAL, 1 component, no default */
         case EXIF_TAG_GPS_DOP:
+        case EXIF_TAG_GPS_SPEED:
+        case EXIF_TAG_GPS_TRACK:
         case EXIF_TAG_GPS_IMG_DIRECTION:
                 e->components = 1;
                 e->format = EXIF_FORMAT_RATIONAL;
@@ -1845,6 +1847,7 @@ exif_entry_gps_initialize (ExifEntry *e, int tag)
 
 
         /* ASCII 2 Components,  default 'T' */
+        case EXIF_TAG_GPS_TRACK_REF:
         case EXIF_TAG_GPS_IMG_DIRECTION_REF:
                 e->components = 2;
                 e->format = EXIF_FORMAT_ASCII;
@@ -1852,6 +1855,16 @@ exif_entry_gps_initialize (ExifEntry *e, int tag)
                 e->data = exif_entry_alloc (e, e->size);
                 if (!e->data) break;
                 memcpy(e->data, "T\0", 2);
+                break;
+
+        /* ASCII 2 Components,  default 'K' */
+        case EXIF_TAG_GPS_SPEED_REF:
+                e->components = 2;
+                e->format = EXIF_FORMAT_ASCII;
+                e->size = exif_format_get_size (e->format) * e->components;
+                e->data = exif_entry_alloc (e, e->size);
+                if (!e->data) break;
+                memcpy(e->data, "K\0", 2);
                 break;
 
         /* ASCII 20 Components, no default*/
