@@ -1,64 +1,44 @@
-from cexif cimport *
+import fractions
+import math
+
 from libc.stdlib cimport free
+from libc.string cimport strlen
 from cpython cimport bool
 
+from cexif cimport *
 
-def data(buf):
+
+cdef JPEGData* jpeg_data_from_buffer(unsigned char* buf, size_t buf_size):
+    """Get JPEGData pointer from buffer. Remember to unref. """
+    cdef JPEGData* jdata = NULL
+    jdata = jpeg_data_new()
+    jpeg_data_load_data(jdata, buf, buf_size)
+    return jdata
+
+
+cdef bytes jpeg_bytes(JPEGData* data):
+    cdef unsigned char* d = NULL
+    cdef unsigned int size = 0
+    jpeg_data_save_data (data, &d, &size);
+    if not d:
+        raise ValueError("could not save JPEG")
+
+    bytes_string = d[:size]
+    free(d)
+    return bytes(bytes_string)
+
+
+cdef ExifData* exif_data_from_buffer(unsigned char* buf, size_t buf_size):
+    """Get ExifData pointer from buffer. Remember to unref. """
     cdef ExifLoader* loader
     cdef ExifData* ed
-    cdef JPEGData* jdata
 
     loader = exif_loader_new()
-    exif_loader_write(loader, buf, len(buf))
+    exif_loader_write(loader, buf, buf_size)
     ed = exif_loader_get_data(loader)
     exif_loader_unref(loader)
 
-    # Parse the JPEG file.
-    jdata = jpeg_data_new()
-    jpeg_data_load_data(jdata, buf, len(buf))
-
-    try:
-
-        # Set GPS longitude and latitude to dummy values.
-        exif_entry_set_gps_longitude(ed,
-                                     rational(50, 1),
-                                     rational(20, 1),
-                                     rational(20, 1))
-        exif_entry_set_gps_longitude_ref_west(ed)
-
-        exif_entry_set_gps_latitude(ed,
-                                    rational(45, 1),
-                                    rational(20, 1),
-                                    rational(10, 1))
-        exif_entry_set_gps_latitude_ref_north(ed)
-
-        exif_entry_set_gps_altitude(ed, rational(7, 3))
-        exif_entry_set_gps_altitude_ref_below_sea_level(ed)
-
-        exif_entry_set_gps_img_direction(ed, rational(700, 36))
-        exif_entry_set_gps_img_direction_ref_true(ed)
-
-        exif_entry_set_gps_dop(ed, rational(123, 23))
-
-        exif_entry_unset(ed, EXIF_IFD_0, EXIF_TAG_MAKE)
-        exif_entry_set_string(ed, EXIF_IFD_0, EXIF_TAG_MAKE, "Narrative")
-        exif_entry_unset(ed, EXIF_IFD_0, EXIF_TAG_MODEL)
-        exif_entry_set_string(ed, EXIF_IFD_0, EXIF_TAG_MODEL, "Narrative Clip")
-        exif_entry_unset(ed, EXIF_IFD_0, EXIF_TAG_SOFTWARE)
-        exif_entry_set_string(ed, EXIF_IFD_0, EXIF_TAG_SOFTWARE, "Narrative")
-
-        if not exif_size_ok(ed):
-            raise ValueError("EXIF data size too large")
-
-        jpeg_data_set_exif_data(jdata, ed)
-
-        # Save the modified image.
-        jpeg_data_save_file(jdata, "out.jpg")
-    except:
-        raise
-    finally:
-        jpeg_data_unref(jdata)
-        exif_data_unref(ed)
+    return ed
 
 
 cdef bool exif_size_ok(ExifData* ed):
@@ -73,6 +53,34 @@ cdef bool exif_size_ok(ExifData* ed):
     return True
 
 
+def dd_to_dms(dd):
+    if dd < 0.0:
+        raise ValueError("decimal degrees must be positive")
+    mnt, sec = divmod(dd * 3600, 60)
+    deg, mnt = divmod(mnt, 60)
+    return deg, mnt, sec
+
+
+cdef ExifRational to_rational(v) except *:
+    if v < 0:
+        raise ValueError("unsigned rational must be positive")
+    frac = fractions.Fraction(v)
+    frac = frac.limit_denominator(UINT32_MAX)
+    if frac.numerator > UINT32_MAX:
+        raise ValueError("value too complicated, try rounding")
+    return rational(frac.numerator, frac.denominator)
+
+
+cdef ExifSRational to_signed_rational(v) except *:
+    frac = fractions.Fraction(v)
+    frac = frac.limit_denominator(INT32_MAX)
+    if frac.numerator > INT32_MAX:
+        raise ValueError("value too complicated, try rounding")
+    if frac.numerator < INT32_MIN:
+        raise ValueError("value too complicated, try rounding")
+    return signed_rational(frac.numerator, frac.denominator)
+
+
 cdef ExifRational rational(uint32_t num, uint32_t denom):
     cdef ExifRational rat
     rat.numerator = num
@@ -85,6 +93,212 @@ cdef ExifSRational signed_rational(int32_t num, int32_t denom):
     rat.numerator = num
     rat.denominator = denom
     return rat
+
+
+def from_jpeg(buf):
+    exif = Exif()
+    exif._ed = exif_data_from_buffer(buf, len(buf))
+    if not exif._ed:
+        raise ValueError("no Exif data in JPEG")
+    return exif
+
+
+def new():
+    exif = Exif()
+    exif._ed = exif_data_new()
+    assert exif._ed
+    return exif
+
+
+cdef class Exif:
+    cdef ExifData* _ed
+
+    def __cinit__(self):
+        self._ed = NULL
+
+    def __dealloc__(self):
+        exif_data_unref(self._ed)
+
+    def combine_jpeg(self, buf):
+        if self._ed:
+            jdata = jpeg_data_from_buffer(buf, len(buf))
+            jpeg_data_set_exif_data(jdata, self._ed)
+            out_buf = jpeg_bytes(jdata)
+        else:
+            out_buf = buf
+        return out_buf
+
+    property altitude:
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, alt):
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_ALTITUDE)
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_ALTITUDE_REF)
+
+            if alt is None:
+                return
+
+            exif_entry_set_gps_altitude(self._ed, to_rational(alt))
+            if alt >= 0:
+                exif_entry_set_gps_altitude_ref_above_sea_level(self._ed)
+            else:
+                exif_entry_set_gps_altitude_ref_below_sea_level(self._ed)
+
+    property longitude:
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, lon):
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_LONGITUDE)
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_LONGITUDE_REF)
+
+            if lon is None:
+                return
+
+            if not (-180.0 <= lon <= 180.0):
+                raise ValueError("longitude not in range [-180, 180]")
+
+            if lon >= 0.0:
+                exif_entry_set_gps_longitude_ref_east(self._ed)
+            else:
+                exif_entry_set_gps_longitude_ref_west(self._ed)
+
+            dms = dd_to_dms(math.copysign(lon, 1.0))
+            exif_entry_set_gps_longitude(self._ed,
+                                         to_rational(dms[0]),
+                                         to_rational(dms[1]),
+                                         to_rational(dms[2]))
+
+    property latitude:
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, lat):
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_LATITUDE)
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_LATITUDE_REF)
+
+            if lat is None:
+                return
+
+            if not (-90.0 <= lat <= 90.0):
+                raise ValueError("latitude not in range [-90, 90]")
+
+            if lat >= 0.0:
+                exif_entry_set_gps_latitude_ref_north(self._ed)
+            else:
+                exif_entry_set_gps_latitude_ref_south(self._ed)
+
+            dms = dd_to_dms(math.copysign(lat, 1.0))
+            exif_entry_set_gps_latitude(self._ed,
+                                        to_rational(dms[0]),
+                                        to_rational(dms[1]),
+                                        to_rational(dms[2]))
+
+    property image_direction:
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, ref_val):
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_IMG_DIRECTION)
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_IMG_DIRECTION_REF)
+
+            if ref_val is None:
+                return
+
+            ref, val = ref_val
+
+            if ref not in ["T", "M"]:
+                raise ValueError("direction reference must be T or M")
+
+            if not (0.0 <= val < 360.0):
+                raise ValueError("direction not in range [0, 360[")
+
+            if ref == "T":
+                exif_entry_set_gps_img_direction_ref_true(self._ed)
+            elif ref == "M":
+                exif_entry_set_gps_img_direction_ref_magnetic(self._ed)
+            else:
+                assert False
+            exif_entry_set_gps_img_direction(self._ed, to_rational(val))
+
+    property track:
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, ref_val):
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_TRACK)
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_TRACK_REF)
+
+            if ref_val is None:
+                return
+
+            ref, val = ref_val
+
+            if ref not in ["T", "M"]:
+                raise ValueError("track reference must be T or M")
+
+            if not (0.0 <= val < 360.0):
+                raise ValueError("track not in range [0, 360[")
+
+            if ref == "T":
+                exif_entry_set_gps_track_ref_true(self._ed)
+            elif ref == "M":
+                exif_entry_set_gps_track_ref_magnetic(self._ed)
+            else:
+                assert False
+            exif_entry_set_gps_track(self._ed, to_rational(val))
+
+    property speed:
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, meters_per_second):
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_SPEED)
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_SPEED_REF)
+
+            if meters_per_second is None:
+                return
+
+            exif_entry_set_gps_speed_ref_kilometers(self._ed)
+            kmh = meters_per_second * 3.6
+            exif_entry_set_gps_speed(self._ed, to_rational(kmh))
+
+    property gps_data_degree_of_precision:
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, dop):
+            exif_entry_unset(self._ed, EXIF_IFD_GPS, EXIF_TAG_GPS_DOP)
+
+            if dop is None:
+                return
+
+            exif_entry_set_gps_dop(self._ed, to_rational(dop))
+
+    property make:
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, make):
+            exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_MAKE)
+            exif_entry_set_string(self._ed, EXIF_IFD_0, EXIF_TAG_MAKE, make)
+
+    property model:
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, model):
+            exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_MODEL)
+            exif_entry_set_string(self._ed, EXIF_IFD_0, EXIF_TAG_MODEL, model)
+
+    property software:
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, sw):
+            exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_SOFTWARE)
+            exif_entry_set_string(self._ed, EXIF_IFD_0, EXIF_TAG_SOFTWARE, sw)
 
 
 ctypedef enum ExifIfd:
