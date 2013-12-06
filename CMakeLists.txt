@@ -14,3 +14,28 @@ add_subdirectory (libexif)
 add_subdirectory (libjpeg) 
 add_subdirectory (JpegEncoderEXIF) 
 add_subdirectory (bindings) 
+
+find_program(PYTHON "python")
+
+set(BINDINGS_VERSION "0.1.0")
+
+if (PYTHON)
+    set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/bindings.py.cmake")
+    set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/bindings.py")
+    set(DEPS        "exifyay")
+    set(OUTPUT      "${CMAKE_CURRENT_BINARY_DIR}/python-timestamp")
+
+    configure_file(${SETUP_PY_IN} ${SETUP_PY})
+
+    add_custom_command(OUTPUT ${OUTPUT}
+                       COMMAND ${PYTHON} ${SETUP_PY} build
+                       COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
+                       DEPENDS ${DEPS})
+
+    add_custom_target(bindings_distutils ALL DEPENDS ${OUTPUT})
+endif()
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/setup.py"
+    )

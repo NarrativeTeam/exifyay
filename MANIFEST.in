@@ -1,0 +1,13 @@
+global-include CMakeLists.txt *.cmake *.c *.h *.py *.md *.pyx *.pxd
+
+global-exclude cmake_install.cmake
+
+recursive-exclude CMakeFiles *
+recursive-exclude bindings/CMakeFiles *
+recursive-exclude JpegEncoderEXIF/CMakeFiles *
+recursive-exclude libexif/CMakeFiles * 
+recursive-exclude libjpeg/CMakeFiles *
+recursive-exclude bindings/build *
+
+exclude libexif/config.h
+exclude bindings.py
