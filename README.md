@@ -30,7 +30,7 @@ is reported. Possibly lost memory is reported, however, but our sanity
 check is to remove all libexif unref calls and such and verify that the
 possibly lost memory value is unchanged.
 
-# Correctness
+## Correctness
 We verify that running the same operations on the same data more than
 once do not change it. We also verify that outputs can be parsed with
 tools like [ExifTool][exiftool]
