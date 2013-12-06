@@ -23,11 +23,18 @@ class install(_install):
 
 
 def _delegate():
-    subprocess.check_call("cmake .".split())
-    subprocess.check_call("make bindings_distutils".split())
+    _run("cmake .")
+    _run("make bindings_distutils")
     sys.stderr.write("delegating to bindings.py... \n")
     sys.stderr.flush()
     os.execvp(sys.executable, [sys.executable, bindings_py_path] + sys.argv[1:])
+
+
+def _run(line):
+    p = subprocess.Popen(line.split(), cwd=proj_dir)
+    p.communicate()
+    if p.returncode != 0:
+        sys.exit("failed: {}".format(line))
 
 
 setup(
