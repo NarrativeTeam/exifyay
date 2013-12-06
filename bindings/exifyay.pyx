@@ -138,6 +138,7 @@ cdef class Exif:
             jdata = jpeg_data_from_buffer(buf, len(buf))
             jpeg_data_set_exif_data(jdata, self._ed)
             out_buf = jpeg_bytes(jdata)
+            jpeg_data_unref(jdata)
         else:
             out_buf = buf
         return out_buf
