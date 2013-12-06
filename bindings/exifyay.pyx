@@ -61,6 +61,20 @@ def dd_to_dms(dd):
     return deg, mnt, sec
 
 
+cdef datetime_to_ascii(dt):
+    return dt.strftime("%Y:%m:%d %H:%M:%S")
+
+
+cdef ExifShort to_short(v) except *:
+    if v < 0:
+        raise ValueError("unsigned short must be positive")
+    if v > UINT16_MAX:
+        raise ValueError("value too large")
+    cdef ExifShort s
+    s = v
+    return s
+
+
 cdef ExifRational to_rational(v) except *:
     if v < 0:
         raise ValueError("unsigned rational must be positive")
@@ -282,6 +296,10 @@ cdef class Exif:
 
         def __set__(self, make):
             exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_MAKE)
+
+            if make is None:
+                return
+
             exif_entry_set_string(self._ed, EXIF_IFD_0, EXIF_TAG_MAKE, make)
 
     property model:
@@ -290,6 +308,10 @@ cdef class Exif:
 
         def __set__(self, model):
             exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_MODEL)
+
+            if model is None:
+                return
+
             exif_entry_set_string(self._ed, EXIF_IFD_0, EXIF_TAG_MODEL, model)
 
     property software:
@@ -298,7 +320,292 @@ cdef class Exif:
 
         def __set__(self, sw):
             exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_SOFTWARE)
+
+            if sw is None:
+                return
+
             exif_entry_set_string(self._ed, EXIF_IFD_0, EXIF_TAG_SOFTWARE, sw)
+
+    property image_width:
+        """Number of columns in the image, pixels per row. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_IMAGE_WIDTH)
+
+            if v is None:
+                return
+
+            exif_entry_set_short(self._ed, EXIF_IFD_0, EXIF_TAG_IMAGE_WIDTH,
+                                 to_short(v))
+
+    property image_length:
+        """Number of rows of pixels. Note that this is the "height." """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_IMAGE_LENGTH)
+
+            if v is None:
+                return
+
+            exif_entry_set_short(self._ed, EXIF_IFD_0, EXIF_TAG_IMAGE_LENGTH,
+                                 to_short(v))
+
+    property exposure_time:
+        """Exposure time in seconds. Can be a fraction. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_EXPOSURE_TIME)
+
+            if v is None:
+                return
+
+            exif_entry_set_rational(self._ed, EXIF_IFD_EXIF,
+                                    EXIF_TAG_EXPOSURE_TIME,
+                                    to_rational(v))
+
+    property exposure_bias_value:
+        """Exposure bias (APEX). Typically in [-99.99, 99.99]. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF,
+                             EXIF_TAG_EXPOSURE_BIAS_VALUE)
+
+            if v is None:
+                return
+
+            exif_entry_set_srational(self._ed, EXIF_IFD_EXIF,
+                                     EXIF_TAG_EXPOSURE_BIAS_VALUE,
+                                     to_signed_rational(v))
+
+    property aperture_value:
+        """Apertue value (APEX). """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_APERTURE_VALUE)
+
+            if v is None:
+                return
+
+            exif_entry_set_rational(self._ed, EXIF_IFD_EXIF,
+                                    EXIF_TAG_APERTURE_VALUE,
+                                    to_rational(v))
+
+    property max_aperture_value:
+        "Smallest F number of the lens (APEX). Typically in [0.00, 99.99]. "
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF,
+                             EXIF_TAG_MAX_APERTURE_VALUE)
+
+            if v is None:
+                return
+
+            exif_entry_set_rational(self._ed, EXIF_IFD_EXIF,
+                                    EXIF_TAG_MAX_APERTURE_VALUE,
+                                    to_rational(v))
+
+    property focal_length:
+        """Actual focal length of the lens, in mm. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF,
+                             EXIF_TAG_FOCAL_LENGTH)
+
+            if v is None:
+                return
+
+            exif_entry_set_rational(self._ed, EXIF_IFD_EXIF,
+                                    EXIF_TAG_FOCAL_LENGTH,
+                                    to_rational(v))
+
+    property custom_rendered:
+        """Truthy if custom rendered. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF,
+                             EXIF_TAG_CUSTOM_RENDERED)
+
+            if v is None:
+                return
+
+            if v:
+                vs = 1
+            else:
+                vs = 0
+
+            exif_entry_set_short(self._ed, EXIF_IFD_EXIF,
+                                 EXIF_TAG_CUSTOM_RENDERED,
+                                 to_short(vs))
+
+    property iso_speed_ratings:
+        """Set to 0 for auto ISO. Otherwise 100 for ISO 100 and so on. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF,
+                             EXIF_TAG_ISO_SPEED_RATINGS)
+
+            if v is None:
+                return
+
+            exif_entry_set_short(self._ed, EXIF_IFD_EXIF,
+                                 EXIF_TAG_ISO_SPEED_RATINGS,
+                                 to_short(v))
+
+    property white_balance:
+        """Truthy if manual white balance, falsy if auto. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_WHITE_BALANCE)
+
+            if v is None:
+                return
+
+            if v:
+                vs = 1
+            else:
+                vs = 0
+
+            exif_entry_set_short(self._ed, EXIF_IFD_EXIF,
+                                 EXIF_TAG_WHITE_BALANCE,
+                                 to_short(vs))
+
+    property contrast:
+        """0 for normal, 1 for soft or 2 for hard. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_CONTRAST)
+
+            if v is None:
+                return
+
+            if v not in [0, 1, 2]:
+                raise ValueError("invalid contrast")
+
+            exif_entry_set_short(self._ed, EXIF_IFD_EXIF, EXIF_TAG_CONTRAST,
+                                 to_short(v))
+
+    property saturation:
+        """0 for normal, 1 for low or 2 for high. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_SATURATION)
+
+            if v is None:
+                return
+
+            if v not in [0, 1, 2]:
+                raise ValueError("invalid saturation")
+
+            exif_entry_set_short(self._ed, EXIF_IFD_EXIF, EXIF_TAG_SATURATION,
+                                 to_short(v))
+
+    property sharpness:
+        """0 for normal, 1 for soft or 2 for hard. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_SHARPNESS)
+
+            if v is None:
+                return
+
+            if v not in [0, 1, 2]:
+                raise ValueError("invalid sharpness")
+
+            exif_entry_set_short(self._ed, EXIF_IFD_EXIF,
+                                 EXIF_TAG_SHARPNESS,
+                                 to_short(v))
+
+    property digital_zoom_ratio:
+        """Digital zoom ratio. Can be a fraction. 0 means no zoom. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF,
+                             EXIF_TAG_DIGITAL_ZOOM_RATIO)
+
+            if v is None:
+                return
+
+            exif_entry_set_rational(self._ed, EXIF_IFD_EXIF,
+                                    EXIF_TAG_DIGITAL_ZOOM_RATIO,
+                                    to_rational(v))
+
+    property date_time_original:
+        """Date and time when original image was generated. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, dt):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF,
+                             EXIF_TAG_DATE_TIME_ORIGINAL)
+
+            if dt is None:
+                return
+
+            cdef char* s
+            p = datetime_to_ascii(dt)
+            s = p
+            exif_entry_set_string(self._ed, EXIF_IFD_EXIF,
+                                  EXIF_TAG_DATE_TIME_ORIGINAL, s)
+
+    property date_time_digitized:
+        """Date and time when the image was stored as digital data. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, dt):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF,
+                             EXIF_TAG_DATE_TIME_DIGITIZED)
+
+            if dt is None:
+                return
+
+            cdef char* s
+            p = datetime_to_ascii(dt)
+            s = p
+            exif_entry_set_string(self._ed, EXIF_IFD_EXIF,
+                                  EXIF_TAG_DATE_TIME_DIGITIZED, s)
+
+    property color_space:
+        """1 for sRGB, 65535 for uncalibrated. """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_COLOR_SPACE)
+
+            if v is None:
+                return
+
+            exif_entry_set_short(self._ed, EXIF_IFD_EXIF, EXIF_TAG_COLOR_SPACE,
+                                 to_short(v))
 
 
 ctypedef enum ExifIfd:
