@@ -19,11 +19,26 @@ the GPS support.
 libexif performs the heavy lifting that lets us read and write Exif
 data. libjpeg is part of the exif tool closely related to libexif.
 
-libexif and libjpeg use autotools, we use CMake because Simon could not
-figure out how to cleanly build static libraries that work both on OS X
-and Linux.
+libexif and libjpeg use autotools, we use [CMake][cmake] because Simon
+could not figure out how to cleanly build static libraries that work
+both on OS X and Linux.
 
-## Checking for memory leaks
+## Build
+```shell
+cmake .
+make
+python setup.py install
+```
+
+To build you must have CMake, make, gcc, g++, Python headers, and
+Cython installed.
+
+## Install using pip
+You can install exifyay using [pip][pip] but you must still have the
+build requirements installed. To create binary distrbutions, you
+may want to have a look at [fpm][fpm].
+
+## Check for memory leaks
 We use [Valgrind][valgrind] and Python built with `--with-valgrind` on
 test scripts and make sure that no directly nor indirectly lost memory
 is reported. Possibly lost memory is reported, however, but our sanity
@@ -47,3 +62,6 @@ tools like [ExifTool][exiftool]
 [cython]: http://cython.org/
 [valgrind]: http://valgrind.org/
 [exiftool]: http://www.sno.phy.queensu.ca/~phil/exiftool/
+[cmake]: http://www.cmake.org/
+[pip]: http://www.pip-installer.org/en/latest/
+[fpm]: https://github.com/jordansissel/fpm
