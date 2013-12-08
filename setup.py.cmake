@@ -41,7 +41,7 @@ setup(
     name="exifyay",
     version='${BINDINGS_VERSION}',
     packages=['exifyay'],
-    package_dir={'exifyay': '${CMAKE_CURRENT_SOURCE_DIR}'},
+    package_dir={'exifyay': ''},
     author='Simon Pantzare',
     author_email='simon@narrativeteam.com',
     description='Yay, Exif!',
