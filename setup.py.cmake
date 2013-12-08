@@ -2,9 +2,9 @@ import os
 import sys
 import subprocess
 
-from distutils.core import setup
+from setuptools import setup
 from distutils.command.build import build as _build
-from distutils.command.install import install as _install
+from setuptools.command.install import install as _install
 
 proj_dir = os.path.abspath(os.path.dirname(__file__))
 bindings_py_path = os.path.join(proj_dir, "bindings.py")
