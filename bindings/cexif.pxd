@@ -145,8 +145,16 @@ cdef extern from "libexif/exif-utils.h":
 
 
 cdef extern from "libjpeg/jpeg-data.h":
-    ctypedef struct JPEGData:
+    ctypedef struct JPEGSection:
         pass
+    ctypedef struct JPEGDataPrivate:
+        pass
+    ctypedef struct JPEGData:
+        JPEGSection* sections
+        unsigned int count
+        unsigned char* data
+        unsigned int size
+        JPEGDataPrivate *priv
 
     JPEGData *jpeg_data_new           ()
     JPEGData *jpeg_data_new_from_file (const char *path)

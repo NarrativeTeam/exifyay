@@ -8,11 +8,14 @@ from cpython cimport bool
 from cexif cimport *
 
 
-cdef JPEGData* jpeg_data_from_buffer(unsigned char* buf, size_t buf_size):
+cdef JPEGData* jpeg_data_from_buffer(unsigned char* buf, size_t buf_size) except *:
     """Get JPEGData pointer from buffer. Remember to unref. """
     cdef JPEGData* jdata = NULL
     jdata = jpeg_data_new()
     jpeg_data_load_data(jdata, buf, buf_size)
+    if jdata.count == 0 or jdata.size == 0:
+        jpeg_data_unref(jdata)
+        raise ValueError("could not read JPEG")
     return jdata
 
 
