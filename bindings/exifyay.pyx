@@ -421,7 +421,11 @@ cdef class Exif:
                                     to_rational(v))
 
     property focal_length:
-        """Actual focal length of the lens, in mm. """
+        """Actual focal length of the lens, in mm.
+
+        Note: This is stored as a rational whereas focal length in 35
+        mm film is a short.
+        """
         def __get__(self):
             raise NotImplementedError()
 
@@ -435,6 +439,26 @@ cdef class Exif:
             exif_entry_set_rational(self._ed, EXIF_IFD_EXIF,
                                     EXIF_TAG_FOCAL_LENGTH,
                                     to_rational(v))
+
+    property focal_length_in_35_mm_film:
+        """Focal length assuming a 35 mm film camera, in mm.
+
+        Note: This is stored as a short whereas focal length (actual)
+        is a rational.
+        """
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF,
+                             EXIF_TAG_FOCAL_LENGTH_IN_35MM_FILM)
+
+            if v is None:
+                return
+
+            exif_entry_set_short(self._ed, EXIF_IFD_EXIF,
+                                 EXIF_TAG_FOCAL_LENGTH_IN_35MM_FILM,
+                                 to_short(v))
 
     property custom_rendered:
         """Truthy if custom rendered. """
