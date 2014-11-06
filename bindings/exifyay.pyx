@@ -76,6 +76,16 @@ cdef ExifShort to_short(v) except *:
     cdef ExifShort s
     s = v
     return s
+    
+
+cdef ExifLong to_long(v) except *:
+    if v < 0:
+        raise ValueError("unsigned long must be positive")
+    if v > UINT32_MAX:
+        raise ValueError("value too large")
+    cdef ExifLong s
+    s = v
+    return s
 
 
 cdef ExifRational to_rational(v) except *:
@@ -114,6 +124,7 @@ cdef ExifSRational signed_rational(int32_t num, int32_t denom):
 
 def from_jpeg(buf):
     exif = Exif()
+    # TODO: unref _ed?
     exif._ed = exif_data_from_buffer(buf, len(buf))
     if not exif._ed:
         raise ValueError("no Exif data in JPEG")
@@ -121,22 +132,80 @@ def from_jpeg(buf):
 
 
 def new():
+    return Exif()
+    
+
+def exif_from_jpeg(cls, buf):
+    return from_jpeg(buf)
+
+
+def exif_from_data(cls, buf):
     exif = Exif()
-    exif._ed = exif_data_new()
-    assert exif._ed
+    exif.update_data(buf)
     return exif
 
 
 cdef class Exif:
+    """
+    Exif object for reading (not yet implemented) and writing EXIF data
+    
+    Implemented EXIF properties:
+        * altitude
+        * aperture_value
+        * color_space
+        * combine_data
+        * combine_jpeg
+        * contrast
+        * custom_rendered
+        * date_time_digitized
+        * date_time_original
+        * digital_zoom_ratio
+        * exif_image_height
+        * exif_image_width
+        * exposure_bias_value
+        * exposure_time
+        * focal_length
+        * focal_length_in_35_mm_film
+        * gps_data_degree_of_precision
+        * image_direction
+        * image_length
+        * image_width
+        * iso_speed_ratings
+        * latitude
+        * longitude
+        * make
+        * max_aperture_value
+        * model
+        * saturation
+        * sharpness
+        * software
+        * speed
+        * track
+        * white_balance
+    """
     cdef ExifData* _ed
+    
+    cdef update_data(self, data):
+        exif_data_load_data(self._ed, data, len(data))
 
     def __cinit__(self):
         self._ed = NULL
+        
+    def __init__(self):
+        if not self._ed:
+            self._ed = exif_data_new()
+        assert self._ed
 
     def __dealloc__(self):
         exif_data_unref(self._ed)
 
     def combine_jpeg(self, buf):
+        """
+        Update given JPEG data with current exif values
+        
+        :arg buf: jpeg data
+        :returns: jpeg data with merged (current and original) exif data
+        """
         if self._ed:
             jdata = jpeg_data_from_buffer(buf, len(buf))
             jpeg_data_set_exif_data(jdata, self._ed)
@@ -145,6 +214,48 @@ cdef class Exif:
         else:
             out_buf = buf
         return out_buf
+        
+    def combine_data(self, buf):
+        """
+        Update given EXIF data with current exif values
+        
+        :arg buf: EXIF data
+        :returns: EXIF data with merged (current and original) exif data
+        """
+        if self._ed:
+            exif = Exif.from_data(self.data)
+            exif.update(buf)
+            out_buf = exif.data
+        else:
+            out_buf = buf
+        return out_buf
+        
+    def update(self, data):
+        """
+        Update current exif object with given EXIF data or Exif instance
+        
+        :arg data: EXIF data or Exif object
+        """
+        if isinstance(data, basestring):
+            self.update_data(data)
+        elif isinstance(data, Exif):
+            self.update(data.data)
+    
+    from_jpeg = classmethod(exif_from_jpeg)
+    from_data = classmethod(exif_from_data)
+    
+    property data:
+        """current (updated) exif data as raw string"""
+        def __get__(self):
+            cdef unsigned char* d = NULL
+            cdef unsigned int ds = 0
+            exif_data_fix(self._ed)
+            exif_data_save_data(self._ed, &d, &ds)
+            if ds == 0:
+                return ''
+            r = d[:ds]
+            free(d)
+            return r
 
     property altitude:
         def __get__(self):
@@ -336,12 +447,12 @@ cdef class Exif:
             raise NotImplementedError()
 
         def __set__(self, v):
-            exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_IMAGE_WIDTH)
+            exif_entry_unset(self._ed, EXIF_IFD_1, EXIF_TAG_IMAGE_WIDTH)
 
             if v is None:
                 return
 
-            exif_entry_set_short(self._ed, EXIF_IFD_0, EXIF_TAG_IMAGE_WIDTH,
+            exif_entry_set_short(self._ed, EXIF_IFD_1, EXIF_TAG_IMAGE_WIDTH,
                                  to_short(v))
 
     property image_length:
@@ -634,6 +745,34 @@ cdef class Exif:
 
             exif_entry_set_short(self._ed, EXIF_IFD_EXIF, EXIF_TAG_COLOR_SPACE,
                                  to_short(v))
+                                 
+    property exif_image_width:
+        """main image width"""
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_EXIF_IMAGE_WIDTH)
+
+            if v is None:
+                return
+
+            exif_entry_set_short(self._ed, EXIF_IFD_EXIF, EXIF_TAG_EXIF_IMAGE_WIDTH,
+                                 to_long(v))
+                                 
+    property exif_image_height:
+        """main image height"""
+        def __get__(self):
+            raise NotImplementedError()
+
+        def __set__(self, v):
+            exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_EXIF_IMAGE_HEIGHT)
+
+            if v is None:
+                return
+
+            exif_entry_set_short(self._ed, EXIF_IFD_EXIF, EXIF_TAG_EXIF_IMAGE_HEIGHT,
+                                 to_long(v))
 
 
 ctypedef enum ExifIfd:
@@ -764,6 +903,10 @@ ctypedef enum ExifTag:
     EXIF_TAG_GAMMA				= 0xa500
     EXIF_TAG_PRINT_IMAGE_MATCHING		= 0xc4a5
     EXIF_TAG_PADDING			= 0xea1c
+    
+    EXIF_TAG_EXIF_IMAGE_WIDTH  = 0xa002
+    EXIF_TAG_EXIF_IMAGE_HEIGHT = 0xa003
+
 
 # GPS tags
 EXIF_TAG_GPS_VERSION_ID        = 0x0000

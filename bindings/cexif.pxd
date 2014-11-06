@@ -55,7 +55,10 @@ cdef extern from "libexif/exif-data.h":
     ctypedef struct ExifData:
         pass
     ctypedef enum ExifDataOption:
-        pass
+        EXIF_DATA_OPTION_IGNORE_UNKNOWN_TAGS = 1 << 0
+        EXIF_DATA_OPTION_FOLLOW_SPECIFICATION = 1 << 1
+        EXIF_DATA_OPTION_DONT_CHANGE_MAKER_NOTE = 1 << 2
+
     ctypedef enum ExifDataType:
         pass
 
