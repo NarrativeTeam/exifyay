@@ -1,0 +1,4 @@
+# Hashes of file build rules.
+70ae0866922f3fe9070d2a162b149e97 CMakeFiles/bindings_distutils
+a177c7f6cb8f457d02ebd35a7efbb37d bindings/exifyay.c
+03217d71418735e296d1fc81161ac4c2 python-timestamp

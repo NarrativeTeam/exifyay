@@ -1,0 +1,5 @@
+/home/felipe/Development/exifyay/JpegEncoderEXIF/CMakeFiles/JpegEncoderEXIF.dir
+/home/felipe/Development/exifyay/CMakeFiles/bindings_distutils.dir
+/home/felipe/Development/exifyay/libexif/CMakeFiles/exif.dir
+/home/felipe/Development/exifyay/bindings/CMakeFiles/exifyay.dir
+/home/felipe/Development/exifyay/libjpeg/CMakeFiles/jpeg.dir
