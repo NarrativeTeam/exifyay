@@ -1,2 +1,0 @@
-/usr/bin/ar cr libJpegEncoderEXIF.a  CMakeFiles/JpegEncoderEXIF.dir/JpegEncoderEXIF.c.o
-/usr/bin/ranlib libJpegEncoderEXIF.a

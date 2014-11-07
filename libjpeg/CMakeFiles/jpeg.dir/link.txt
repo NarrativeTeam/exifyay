@@ -1,2 +1,0 @@
-/usr/bin/ar cr libjpeg.a  CMakeFiles/jpeg.dir/jpeg-data.c.o CMakeFiles/jpeg.dir/jpeg-marker.c.o
-/usr/bin/ranlib libjpeg.a

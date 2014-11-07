@@ -1,2 +1,9 @@
-
+Makefile
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+/MANIFEST
+/setup.py
+/bindings.py
+/python-timestamp
 /build
