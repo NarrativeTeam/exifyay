@@ -17,7 +17,7 @@ add_subdirectory (bindings)
 
 find_program(PYTHON "python")
 
-set(BINDINGS_VERSION "0.1.2")
+set(BINDINGS_VERSION "0.1.3")
 
 if (PYTHON)
     set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/bindings.py.cmake")
