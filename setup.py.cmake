@@ -23,7 +23,7 @@ class install(_install):
 
 
 def _delegate():
-    _run("cmake .")
+    _run("cmake -DPY='{}' .".format(sys.executable))
     _run("make bindings_distutils")
     sys.stderr.write("delegating to bindings.py... \n")
     sys.stderr.flush()

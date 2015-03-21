@@ -15,9 +15,15 @@ add_subdirectory (libjpeg)
 add_subdirectory (JpegEncoderEXIF) 
 add_subdirectory (bindings) 
 
-find_program(PYTHON "python")
+option(PY "PY" "")
 
-set(BINDINGS_VERSION "0.1.3")
+if( "${PY}" STREQUAL "" )
+    find_program(PYTHON "python")
+else()
+    set(PYTHON "${PY}")
+endif()
+
+set(BINDINGS_VERSION "0.1.4")
 
 if (PYTHON)
     set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/bindings.py.cmake")
