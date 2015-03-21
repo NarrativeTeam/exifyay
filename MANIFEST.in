@@ -8,6 +8,8 @@ recursive-exclude JpegEncoderEXIF/CMakeFiles *
 recursive-exclude libexif/CMakeFiles * 
 recursive-exclude libjpeg/CMakeFiles *
 recursive-exclude bindings/build *
+recursive-exclude env *
+recursive-exclude venv *
 
 exclude libexif/config.h
 exclude bindings.py
