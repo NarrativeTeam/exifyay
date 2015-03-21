@@ -14,4 +14,5 @@ setup(
     license='LGPL',
     keywords='exif',
     url='http://github.com/Memoto/exifyay',
-    )
+    zip_safe=False,
+)

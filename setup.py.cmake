@@ -49,4 +49,5 @@ setup(
     keywords='exif',
     url='http://github.com/Memoto/exifyay',
     cmdclass={'build': build, 'install': install},
+    zip_safe=False,
 )
