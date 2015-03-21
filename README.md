@@ -50,6 +50,11 @@ We verify that running the same operations on the same data more than
 once do not change it. We also verify that outputs can be parsed with
 tools like [ExifTool][exiftool]
 
+## Contributors
+
+* [Simon Pantzare](https://github.com/pilt)
+* [Felipe A. Hernandez](https://github.com/ergoithz)
+
 
 ## Licenses
  * exifyay (LGPL v3)
