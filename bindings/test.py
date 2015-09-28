@@ -91,7 +91,15 @@ class ExifTestCase(unittest.TestCase):
 
         # EXIF order is not preserved
         #self.assertEqual(xf.data, exifyay.from_jpeg(xf2.combine_jpeg(self.exif_jpeg)).data)
-        #self.assertEqual(xf.combine_jpeg(self.exif_jpeg), xf2.combine_jpeg(self.exif_jpeg))        
+        #self.assertEqual(xf.combine_jpeg(self.exif_jpeg), xf2.combine_jpeg(self.exif_jpeg))
+
+    def testGetters(self):
+        f = open('/Users/daniel/Desktop/hasprofile.jpg')
+        xf = exifyay.from_jpeg(f.read())
+        print 'exposure_time:', xf.model
+        self.assertEqual(xf.model, 'Narrative Clip 2')
+        self.assertEqual(xf.make, 'Narrative')
+        self.assertEqual(xf.image_width, 3264)
 
 if __name__ == '__main__':
     unittest.main()

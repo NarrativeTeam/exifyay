@@ -188,6 +188,22 @@ cdef class Exif:
     cdef update_data(self, data):
         exif_data_load_data(self._ed, data, len(data))
 
+    def test_test(self):
+        cdef char value[1024]
+        if self._ed:
+            print "is _ed"
+
+            exif_entry = exif_data_get_entry(self._ed, EXIF_TAG_EXPOSURE_TIME)
+            exif_entry_dump(exif_entry, 2)
+            exif_entry_get_value(exif_entry, value, 1024)
+            print value
+            #data = exif_entry.data
+        else:
+            print "big fail"
+        #cdef ExifEntry exif_entry
+        #exif_entry = exif_data_get_entry(exif_data_new(), *EXIF_TAG_MAKE)
+        #exif_entry_dump(exif_entry, 1)
+
     def __cinit__(self):
         self._ed = NULL
         
@@ -198,6 +214,12 @@ cdef class Exif:
 
     def __dealloc__(self):
         exif_data_unref(self._ed)
+
+    def get_entry_data(self, exif_tag):
+        exif_entry = exif_data_get_entry(self._ed, exif_tag)
+
+        print type(exif_entry.data)
+        return exif_entry.data
 
     def combine_jpeg(self, buf):
         """
@@ -407,7 +429,7 @@ cdef class Exif:
 
     property make:
         def __get__(self):
-            raise NotImplementedError()
+            return self.get_entry_data(EXIF_TAG_MAKE)
 
         def __set__(self, make):
             exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_MAKE)
@@ -419,7 +441,7 @@ cdef class Exif:
 
     property model:
         def __get__(self):
-            raise NotImplementedError()
+            return self.get_entry_data(EXIF_TAG_MODEL)
 
         def __set__(self, model):
             exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_MODEL)
@@ -431,7 +453,7 @@ cdef class Exif:
 
     property software:
         def __get__(self):
-            raise NotImplementedError()
+            return self.get_entry_data(EXIF_TAG_SOFTWARE)
 
         def __set__(self, sw):
             exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_SOFTWARE)
@@ -444,7 +466,15 @@ cdef class Exif:
     property image_width:
         """Number of columns in the image, pixels per row. """
         def __get__(self):
-            raise NotImplementedError()
+            cdef unsigned char *data
+            #entry_data = self.get_entry_data(EXIF_TAG_IMAGE_WIDTH)
+            #exif_entry = exif_data_get_entry(self._ed, EXIF_TAG_IMAGE_WIDTH)
+            data = exif_data_get_entry(self._ed, EXIF_TAG_IMAGE_WIDTH).data
+            #byte_order = exif_data_get_byte_order(self._ed)
+            #entry_short_data = exif_get_short(exif_entry.data, byte_order)
+            #print type(entry_short_data)
+            #print entry_short_data
+            #return entry_short_data
 
         def __set__(self, v):
             exif_entry_unset(self._ed, EXIF_IFD_1, EXIF_TAG_IMAGE_WIDTH)
@@ -458,7 +488,7 @@ cdef class Exif:
     property image_length:
         """Number of rows of pixels. Note that this is the "height." """
         def __get__(self):
-            raise NotImplementedError()
+            return self.get_entry_data(EXIF_TAG_IMAGE_LENGTH)
 
         def __set__(self, v):
             exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_IMAGE_LENGTH)
@@ -472,7 +502,8 @@ cdef class Exif:
     property exposure_time:
         """Exposure time in seconds. Can be a fraction. """
         def __get__(self):
-            raise NotImplementedError()
+            print type(self.get_entry_data(EXIF_TAG_EXPOSURE_TIME))
+            return self.get_entry_data(EXIF_TAG_EXPOSURE_TIME)
 
         def __set__(self, v):
             exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_EXPOSURE_TIME)

@@ -35,11 +35,14 @@ cdef extern from "libexif/exif-ifd.h":
     ctypedef enum ExifIfd:
         pass
 
-
 cdef extern from "libexif/exif-entry.h":
     ctypedef struct ExifEntry:
+        unsigned char *data
         pass
 
+    void exif_entry_dump(ExifEntry *entry, unsigned int indent)
+    const char *exif_entry_get_value (ExifEntry *entry, char *val,
+        unsigned int maxlen)
 
 cdef extern from "libexif/exif-mnote-data.h":
     ctypedef struct ExifMnoteData:
@@ -90,6 +93,7 @@ cdef extern from "libexif/exif-data.h":
     ExifDataType exif_data_get_data_type (ExifData *d)
     void exif_data_dump (ExifData *data)
     void exif_data_log  (ExifData *data, ExifLog *log)
+    ExifEntry *exif_data_get_entry(ExifData *data, ExifTag tag)
 
 
 
@@ -145,6 +149,8 @@ cdef extern from "libexif/exif-utils.h":
     ctypedef struct ExifSRational:
         ExifSLong numerator
         ExifSLong denominator
+
+    void exif_get_short (const unsigned char *b, ExifByteOrder order)
 
 
 cdef extern from "libjpeg/jpeg-data.h":
