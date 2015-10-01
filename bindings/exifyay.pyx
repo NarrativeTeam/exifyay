@@ -188,21 +188,8 @@ cdef class Exif:
     cdef update_data(self, data):
         exif_data_load_data(self._ed, data, len(data))
 
-    def test_test(self):
-        cdef char value[1024]
-        if self._ed:
-            print "is _ed"
-
-            exif_entry = exif_data_get_entry(self._ed, EXIF_TAG_EXPOSURE_TIME)
-            exif_entry_dump(exif_entry, 2)
-            exif_entry_get_value(exif_entry, value, 1024)
-            print value
-            #data = exif_entry.data
-        else:
-            print "big fail"
-        #cdef ExifEntry exif_entry
-        #exif_entry = exif_data_get_entry(exif_data_new(), *EXIF_TAG_MAKE)
-        #exif_entry_dump(exif_entry, 1)
+    def data_dump(self):
+        exif_data_dump(self._ed)
 
     def __cinit__(self):
         self._ed = NULL
@@ -219,6 +206,8 @@ cdef class Exif:
         exif_entry = exif_data_get_entry(self._ed, exif_tag)
 
         print type(exif_entry.data)
+        print "entry data:", exif_entry.data
+        print "entry data len:", len(exif_entry.data)
         return exif_entry.data
 
     def combine_jpeg(self, buf):
@@ -262,7 +251,25 @@ cdef class Exif:
             self.update_data(data)
         elif isinstance(data, Exif):
             self.update(data.data)
-    
+
+    def copy_specific_tags(self, tags=[]):
+        """
+        Copy a defined set of tags from the current exif object to a new exif
+        object.
+
+        :arg tags: A list of tags that will be copied
+        :returns: A new exif object
+        """
+        cdef ExifData* exif_data
+        # TODO: Make sure new has the same byte order as the old
+        exif_data = exif_data_new()
+        for tag in tags:
+            exif_data_copy_tag(self._ed, exif_data, tag)
+
+        exif = Exif()
+        exif._ed = exif_data
+        return exif
+
     from_jpeg = classmethod(exif_from_jpeg)
     from_data = classmethod(exif_from_data)
     
@@ -547,7 +554,8 @@ cdef class Exif:
                                     to_rational(v))
 
     property max_aperture_value:
-        "Smallest F number of the lens (APEX). Typically in [0.00, 99.99]. "
+        """Smallest F number of the lens (APEX). Typically in [0.00, 99.99].
+        """
         def __get__(self):
             raise NotImplementedError()
 
@@ -780,7 +788,20 @@ cdef class Exif:
     property exif_image_width:
         """main image width"""
         def __get__(self):
-            raise NotImplementedError()
+            entry_data = self.get_entry_data(EXIF_TAG_EXIF_IMAGE_WIDTH)
+            print "Entry data type:", type(entry_data)
+            print "entry data:", entry_data
+            print "entry data len:", len(entry_data)
+            #exif_entry = exif_data_get_entry(self._ed, EXIF_TAG_EXIF_IMAGE_WIDTH)
+            #data = exif_data_get_entry(self._ed, EXIF_TAG_EXIF_IMAGE_WIDTH).data
+            byte_order = exif_data_get_byte_order(self._ed)
+            print int(entry_data)
+            entry_short_data = exif_get_short(entry_data, byte_order)
+
+            print "byte order:", type(byte_order), byte_order
+
+            print "entry_short_data:", type(entry_short_data), entry_short_data
+            #return entry_short_data
 
         def __set__(self, v):
             exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_EXIF_IMAGE_WIDTH)

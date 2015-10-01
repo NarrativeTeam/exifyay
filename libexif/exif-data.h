@@ -41,6 +41,7 @@ typedef struct _ExifDataPrivate ExifDataPrivate;
 #include <libexif/exif-content.h>
 #include <libexif/exif-mnote-data.h>
 #include <libexif/exif-mem.h>
+#include <libexif/exif-entry.h>
 
 /*! Represents the entire EXIF data found in an image */
 struct _ExifData
@@ -257,6 +258,22 @@ void exif_data_log  (ExifData *data, ExifLog *log);
 	 exif_content_get_entry(d->ifd[EXIF_IFD_GPS],t) :		\
 	 exif_content_get_entry(d->ifd[EXIF_IFD_INTEROPERABILITY],t) ?	\
 	 exif_content_get_entry(d->ifd[EXIF_IFD_INTEROPERABILITY],t) : NULL)
+
+/*! Copies the exif entry for the specified exif tag
+ * from one exif data to another
+ *
+ * \param[in] d_old #ExifData
+ * \param[in] d_new #ExifData
+ * \param[in] tag   #ExifTag
+ */
+void exif_data_copy_tag (ExifData *d_old, ExifData *d_new, ExifTag tag);
+
+/*! Copies an entry into another entry data.
+ *
+ * \param[in] e #ExifEntry
+ * \param[in] d #ExifData
+ */
+void exif_data_copy_exif_entry (ExifEntry *e, ExifData *d);
 
 #ifdef __cplusplus
 }

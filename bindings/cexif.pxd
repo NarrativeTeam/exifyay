@@ -38,11 +38,11 @@ cdef extern from "libexif/exif-ifd.h":
 cdef extern from "libexif/exif-entry.h":
     ctypedef struct ExifEntry:
         unsigned char *data
-        pass
 
     void exif_entry_dump(ExifEntry *entry, unsigned int indent)
     const char *exif_entry_get_value (ExifEntry *entry, char *val,
         unsigned int maxlen)
+    ExifIfd exif_entry_get_ifd(ExifEntry *entry)
 
 cdef extern from "libexif/exif-mnote-data.h":
     ctypedef struct ExifMnoteData:
@@ -89,11 +89,12 @@ cdef extern from "libexif/exif-data.h":
     const char *exif_data_option_get_description (ExifDataOption o)
     void        exif_data_set_option             (ExifData *d, ExifDataOption o)
     void        exif_data_unset_option           (ExifData *d, ExifDataOption o)
-    void         exif_data_set_data_type (ExifData *d, ExifDataType dt)
+    void        exif_data_set_data_type (ExifData *d, ExifDataType dt)
     ExifDataType exif_data_get_data_type (ExifData *d)
-    void exif_data_dump (ExifData *data)
-    void exif_data_log  (ExifData *data, ExifLog *log)
-    ExifEntry *exif_data_get_entry(ExifData *data, ExifTag tag)
+    void        exif_data_dump (ExifData *data)
+    void        exif_data_log  (ExifData *data, ExifLog *log)
+    ExifEntry  *exif_data_get_entry (ExifData *data, ExifTag tag)
+    void        exif_data_copy_tag  (ExifData *d_old, ExifData *d_new, ExifTag tag)
 
 
 
@@ -150,7 +151,7 @@ cdef extern from "libexif/exif-utils.h":
         ExifSLong numerator
         ExifSLong denominator
 
-    void exif_get_short (const unsigned char *b, ExifByteOrder order)
+    ExifShort exif_get_short (const unsigned char *b, ExifByteOrder order)
 
 
 cdef extern from "libjpeg/jpeg-data.h":

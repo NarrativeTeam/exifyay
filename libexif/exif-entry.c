@@ -166,6 +166,20 @@ exif_entry_free (ExifEntry *e)
 	}
 }
 
+void
+exif_entry_copy (ExifEntry *e_src, ExifEntry *e_dst)
+{
+	if (!e_src || !e_dst ) return;
+
+	e_dst->tag = e_src->tag;
+	e_dst->format = e_src->format;
+	e_dst->components = e_src->components;
+	e_dst->size = e_src->size;
+	e_dst->data = exif_entry_alloc(e_dst, e_dst->size);
+	memcpy(e_dst->data, e_src->data, e_dst->size);
+
+}
+
 /*! Get a value and convert it to an ExifShort.
  * \bug Not all types are converted that could be converted and no indication
  *      is made when that occurs

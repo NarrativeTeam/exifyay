@@ -29,6 +29,7 @@
 #include <libexif/exif-log.h>
 #include <libexif/i18n.h>
 #include <libexif/exif-system.h>
+#include <libexif/exif-entry.h>
 
 #include <libexif/canon/exif-mnote-data-canon.h>
 #include <libexif/fuji/exif-mnote-data-fuji.h>
@@ -1274,3 +1275,30 @@ exif_data_get_data_type (ExifData *d)
 {
 	return (d && d->priv) ? d->priv->data_type : EXIF_DATA_TYPE_UNKNOWN;
 }
+
+void
+exif_data_copy_exif_entry (ExifEntry *e, ExifData *d)
+{
+	if (!e || !d ) return;
+
+	ExifEntry *new_e = exif_entry_new();
+	ExifIfd ifd = exif_entry_get_ifd(e);
+	ExifContent *c = d->ifd[ifd];
+
+	// Add new entry to the correct content
+	exif_content_add_entry(c, new_e);
+	new_e->parent = c;
+
+	// Copy exif entry
+	exif_entry_copy(e, new_e);
+}
+
+void
+exif_data_copy_tag(ExifData *d_old, ExifData *d_new, ExifTag tag)
+{
+	if (!d_old || !d_new) return;
+
+	ExifEntry *e = exif_data_get_entry(d_old, tag);
+	exif_data_copy_exif_entry(e, d_new);
+}
+

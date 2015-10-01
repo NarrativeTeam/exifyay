@@ -93,13 +93,11 @@ class ExifTestCase(unittest.TestCase):
         #self.assertEqual(xf.data, exifyay.from_jpeg(xf2.combine_jpeg(self.exif_jpeg)).data)
         #self.assertEqual(xf.combine_jpeg(self.exif_jpeg), xf2.combine_jpeg(self.exif_jpeg))
 
-    def testGetters(self):
-        f = open('/Users/daniel/Desktop/hasprofile.jpg')
-        xf = exifyay.from_jpeg(f.read())
-        print 'exposure_time:', xf.model
-        self.assertEqual(xf.model, 'Narrative Clip 2')
-        self.assertEqual(xf.make, 'Narrative')
-        self.assertEqual(xf.image_width, 3264)
+    #def testCopy(self):
+    #    f = open('/media/psf/Home/Desktop/hasprofile.jpg')
+    #    xf = exifyay.from_jpeg(f.read())
+    #    new_xf = xf.copy_specific_tags(tags=[0x10f, 0x132, 0x0110, 0x829d, 0xa405, 0x9201, 0x9003, 0x8827, 0x829a])
+    #    new_xf.data_dump()
 
 if __name__ == '__main__':
     unittest.main()

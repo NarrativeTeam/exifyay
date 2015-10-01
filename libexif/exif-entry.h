@@ -104,6 +104,13 @@ void        exif_entry_ref     (ExifEntry *entry);
  */
 void        exif_entry_unref   (ExifEntry *entry);
 
+/*! Copies the fields in one entry to another. Except for parent.
+ *
+ * \param[in] e_src #ExifEntry
+ * \param[in] e_dst #ExifEntry
+ */
+void exif_entry_copy (ExifEntry *e_src, ExifEntry *e_dst);
+
 /*! Actually free the #ExifEntry.
  *
  * \deprecated Should not be called directly. Use #exif_entry_ref and
