@@ -144,6 +144,8 @@ def exif_from_data(cls, buf):
     exif.update_data(buf)
     return exif
 
+class ExifTagNotFoundError(Exception):
+    pass
 
 cdef class Exif:
     """
@@ -189,6 +191,9 @@ cdef class Exif:
         exif_data_load_data(self._ed, data, len(data))
 
     def data_dump(self):
+        """
+        Prints the content of the exif data to stdout for easier debugging.
+        """
         exif_data_dump(self._ed)
 
     def __cinit__(self):
@@ -203,11 +208,20 @@ cdef class Exif:
         exif_data_unref(self._ed)
 
     def get_entry_data(self, exif_tag):
+        """
+        Receives the raw data stored in an exif entry. Note that if the
+        exif data stored is anything else than a zero terminated string
+        conversions has to be done in order to get a intelligible return
+        value.
+
+        :arg exif_tag: Exif tag
+        :returns:
+        """
+        cdef ExifEntry* exif_entry
         exif_entry = exif_data_get_entry(self._ed, exif_tag)
 
-        print type(exif_entry.data)
-        print "entry data:", exif_entry.data
-        print "entry data len:", len(exif_entry.data)
+        if exif_entry == NULL:
+            raise ExifTagNotFoundError()
         return exif_entry.data
 
     def combine_jpeg(self, buf):
@@ -260,9 +274,13 @@ cdef class Exif:
         :arg tags: A list of tags that will be copied
         :returns: A new exif object
         """
+        cdef ExifByteOrder exif_byte_order
         cdef ExifData* exif_data
-        # TODO: Make sure new has the same byte order as the old
+
+        exif_byte_order = exif_data_get_byte_order(self._ed)
         exif_data = exif_data_new()
+        exif_data_set_byte_order(exif_data, exif_byte_order)
+
         for tag in tags:
             exif_data_copy_tag(self._ed, exif_data, tag)
 
@@ -473,15 +491,7 @@ cdef class Exif:
     property image_width:
         """Number of columns in the image, pixels per row. """
         def __get__(self):
-            cdef unsigned char *data
-            #entry_data = self.get_entry_data(EXIF_TAG_IMAGE_WIDTH)
-            #exif_entry = exif_data_get_entry(self._ed, EXIF_TAG_IMAGE_WIDTH)
-            data = exif_data_get_entry(self._ed, EXIF_TAG_IMAGE_WIDTH).data
-            #byte_order = exif_data_get_byte_order(self._ed)
-            #entry_short_data = exif_get_short(exif_entry.data, byte_order)
-            #print type(entry_short_data)
-            #print entry_short_data
-            #return entry_short_data
+            raise NotImplementedError()
 
         def __set__(self, v):
             exif_entry_unset(self._ed, EXIF_IFD_1, EXIF_TAG_IMAGE_WIDTH)
@@ -495,7 +505,7 @@ cdef class Exif:
     property image_length:
         """Number of rows of pixels. Note that this is the "height." """
         def __get__(self):
-            return self.get_entry_data(EXIF_TAG_IMAGE_LENGTH)
+            raise NotImplementedError()
 
         def __set__(self, v):
             exif_entry_unset(self._ed, EXIF_IFD_0, EXIF_TAG_IMAGE_LENGTH)
@@ -509,8 +519,7 @@ cdef class Exif:
     property exposure_time:
         """Exposure time in seconds. Can be a fraction. """
         def __get__(self):
-            print type(self.get_entry_data(EXIF_TAG_EXPOSURE_TIME))
-            return self.get_entry_data(EXIF_TAG_EXPOSURE_TIME)
+            raise NotImplementedError()
 
         def __set__(self, v):
             exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_EXPOSURE_TIME)
@@ -738,7 +747,7 @@ cdef class Exif:
     property date_time_original:
         """Date and time when original image was generated. """
         def __get__(self):
-            raise NotImplementedError()
+            return self.get_entry_data(EXIF_TAG_DATE_TIME_ORIGINAL)
 
         def __set__(self, dt):
             exif_entry_unset(self._ed, EXIF_IFD_EXIF,
@@ -756,7 +765,7 @@ cdef class Exif:
     property date_time_digitized:
         """Date and time when the image was stored as digital data. """
         def __get__(self):
-            raise NotImplementedError()
+            return self.get_entry_data(EXIF_TAG_DATE_TIME_DIGITIZED)
 
         def __set__(self, dt):
             exif_entry_unset(self._ed, EXIF_IFD_EXIF,
@@ -788,20 +797,7 @@ cdef class Exif:
     property exif_image_width:
         """main image width"""
         def __get__(self):
-            entry_data = self.get_entry_data(EXIF_TAG_EXIF_IMAGE_WIDTH)
-            print "Entry data type:", type(entry_data)
-            print "entry data:", entry_data
-            print "entry data len:", len(entry_data)
-            #exif_entry = exif_data_get_entry(self._ed, EXIF_TAG_EXIF_IMAGE_WIDTH)
-            #data = exif_data_get_entry(self._ed, EXIF_TAG_EXIF_IMAGE_WIDTH).data
-            byte_order = exif_data_get_byte_order(self._ed)
-            print int(entry_data)
-            entry_short_data = exif_get_short(entry_data, byte_order)
-
-            print "byte order:", type(byte_order), byte_order
-
-            print "entry_short_data:", type(entry_short_data), entry_short_data
-            #return entry_short_data
+            raise NotImplementedError()
 
         def __set__(self, v):
             exif_entry_unset(self._ed, EXIF_IFD_EXIF, EXIF_TAG_EXIF_IMAGE_WIDTH)
