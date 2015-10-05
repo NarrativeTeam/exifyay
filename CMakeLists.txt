@@ -17,7 +17,7 @@ add_subdirectory (bindings)
 
 find_package( PythonInterp )
 
-set(BINDINGS_VERSION "0.1.5")
+set(BINDINGS_VERSION "0.2.0")
 
 set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/bindings.py.cmake")
 set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/bindings.py")
